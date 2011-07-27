@@ -27,6 +27,7 @@ func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf Outpu
 	var sheetLen int
 	var rowString string
 
+	fmt.Printf("%v\n", excelFileName)
 	xlFile, error = xlsx.OpenFile(excelFileName)
 	if error != nil {
 		return error
