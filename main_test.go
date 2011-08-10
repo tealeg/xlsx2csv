@@ -28,12 +28,12 @@ func TestGenerateCSVFromXLSXFile(t *testing.T) {
 		t.Error("Expected len(csv) == 2")
 	}
 	rowString1 := csv[0]
-	if rowString1 != "\"Foo\",\"Bar\"\n" {
-		t.Error(`Expected rowString1 == "Foo","Bar"\n but got `, rowString1)
+	if rowString1 != "\"Foo\";\"Bar\"\n" {
+		t.Error(`Expected rowString1 == "Foo";"Bar"\n but got `, rowString1)
 	}
 	rowString2 := csv[1]
-	if rowString2 != "\"Baz \",\"Quuk\"\n" {
-		t.Error(`Expected rowString2 == "Baz ","Quuk"\n but got `, rowString2)
+	if rowString2 != "\"Baz \";\"Quuk\"\n" {
+		t.Error(`Expected rowString2 == "Baz ";"Quuk"\n but got `, rowString2)
 	}
 }
 
@@ -60,16 +60,16 @@ var sheetIndex int
 		t.Error("Expected len(csv) == 3, but got", csvlen)
 	}
 	rowString1 := csv[0]
-	if rowString1 != "\"Bob\",\"Alice\",\"Sue\"\n" {
-		t.Error(`Expected rowString1 == "Bob","Alice",Sue"\n but got `, rowString1)
+	if rowString1 != "\"Bob\";\"Alice\";\"Sue\"\n" {
+		t.Error(`Expected rowString1 == "Bob";"Alice";Sue"\n but got `, rowString1)
 	}
 	rowString2 := csv[1]
-	if rowString2 != "\"Yes\",\"No\",\"Yes\"\n" {
-		t.Error(`Expected rowString2 == "Yes","No","Yes"\n but got `, rowString2)
+	if rowString2 != "\"Yes\";\"No\";\"Yes\"\n" {
+		t.Error(`Expected rowString2 == "Yes";"No";"Yes"\n but got `, rowString2)
 	}
 	rowString3 := csv[2]
-	if rowString3 != "\"No\",\"\",\"Yes\"\n" {
-		t.Error(`Expected rowString2 == "No","", "Yes"\n but got `, rowString3)
+	if rowString3 != "\"No\";\"\";\"Yes\"\n" {
+		t.Error(`Expected rowString2 == "No";"";"Yes"\n but got `, rowString3)
 	}
 	
 }
