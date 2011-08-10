@@ -27,7 +27,6 @@ func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf Outpu
 	var sheetLen int
 	var rowString string
 
-	fmt.Printf("%v\n", excelFileName)
 	xlFile, error = xlsx.OpenFile(excelFileName)
 	if error != nil {
 		return error
@@ -76,7 +75,7 @@ func main() {
 		return
 	}
 	flag.Parse()
-	error = generateCSVFromXLSXFile(*xlsxPath, *sheetIndex, func (s string) {fmt.Printf("%s\n", s)})
+	error = generateCSVFromXLSXFile(*xlsxPath, *sheetIndex, func (s string) {fmt.Printf("%s", s)})
 	if error != nil {
 		fmt.Printf(error.String())
 		return
