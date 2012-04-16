@@ -22,7 +22,7 @@ func TestGenerateCSVFromXLSXFile(t *testing.T) {
 	excelFileName = "testfile.xlsx"
 	error := generateCSVFromXLSXFile(excelFileName, sheetIndex, testOutputer)
 	if error != nil {
-		t.Error(error.String())
+		t.Error(error.Error())
 	}
 	if len(csv) != 2 {
 		t.Error("Expected len(csv) == 2")
@@ -53,7 +53,7 @@ var sheetIndex int
 	excelFileName = "testfile2.xlsx"
 	error := generateCSVFromXLSXFile(excelFileName, sheetIndex, testOutputer)
 	if error != nil {
-		t.Error(error.String())
+		t.Error(error.Error())
 	}
 	csvlen = len(csv)
 	if csvlen != 3 {
