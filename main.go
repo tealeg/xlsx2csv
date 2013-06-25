@@ -58,7 +58,7 @@ func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf Outpu
 }
 
 func usage() {
-	fmt.Printf(`%s: <XLSXFile> <SheetIndex>
+	fmt.Printf(`%s: -f=<XLSXFile> -i=<SheetIndex>
 
 Note: SheetIndex should be a number, zero based
 `,
