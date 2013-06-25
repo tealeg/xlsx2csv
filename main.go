@@ -44,15 +44,17 @@ func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf Outpu
 	sheet := xlFile.Sheets[sheetIndex]
 	for _, row := range sheet.Rows {
 		rowString = ""
-		for cellIndex, cell := range row.Cells {
-			if cellIndex > 0 {
-				rowString = fmt.Sprintf("%s;\"%s\"", rowString, cell.String())
-			} else {
-				rowString = fmt.Sprintf("\"%s\"", cell.String())
+		if row != nil {
+			for cellIndex, cell := range row.Cells {
+				if cellIndex > 0 {
+					rowString = fmt.Sprintf("%s;\"%s\"", rowString, cell.String())
+				} else {
+					rowString = fmt.Sprintf("\"%s\"", cell.String())
+				}
 			}
+			rowString = fmt.Sprintf("%s\n", rowString)
+			outputf(rowString)
 		}
-		rowString = fmt.Sprintf("%s\n", rowString)
-		outputf(rowString)
 	}
 	return nil
 }

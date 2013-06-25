@@ -4,15 +4,12 @@ import (
 	"testing"
 )
 
-
-
-
 func TestGenerateCSVFromXLSXFile(t *testing.T) {
 	var sheetIndex int
 	var excelFileName string
 	var csv []string
 	var index int
-	var testOutputer = func (s string) {
+	var testOutputer = func(s string) {
 		csv[index] = s
 		index++
 	}
@@ -38,12 +35,12 @@ func TestGenerateCSVFromXLSXFile(t *testing.T) {
 }
 
 func TestGenerateCSVFromXLSXFileWithEmptyCells(t *testing.T) {
-var sheetIndex int
+	var sheetIndex int
 	var excelFileName string
 	var csv []string
 	var csvlen int
 	var index int
-	var testOutputer = func (s string) {
+	var testOutputer = func(s string) {
 		csv[index] = s
 		index++
 	}
@@ -71,5 +68,5 @@ var sheetIndex int
 	if rowString3 != "\"No\";\"\";\"Yes\"\n" {
 		t.Error(`Expected rowString2 == "No";"";"Yes"\n but got `, rowString3)
 	}
-	
+
 }
