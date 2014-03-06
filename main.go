@@ -9,6 +9,7 @@ import (
 
 var xlsxPath = flag.String("f", "", "Path to an XLSX file")
 var sheetIndex = flag.Int("i", 0, "Index of sheet to convert, zero based")
+var delimiter = flag.String("d", ";", "Delimiter to use between fields")
 
 type Outputer func(s string)
 
@@ -47,7 +48,7 @@ func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf Outpu
 		if row != nil {
 			for cellIndex, cell := range row.Cells {
 				if cellIndex > 0 {
-					rowString = fmt.Sprintf("%s;\"%s\"", rowString, cell.String())
+					rowString = fmt.Sprintf("%s%s\"%s\"", rowString, *delimiter, cell.String())
 				} else {
 					rowString = fmt.Sprintf("\"%s\"", cell.String())
 				}
@@ -60,7 +61,7 @@ func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf Outpu
 }
 
 func usage() {
-	fmt.Printf(`%s: -f=<XLSXFile> -i=<SheetIndex>
+	fmt.Printf(`%s: -f=<XLSXFile> -i=<SheetIndex> -d=<Delimiter>
 
 Note: SheetIndex should be a number, zero based
 `,
