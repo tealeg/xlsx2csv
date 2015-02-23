@@ -1,10 +1,11 @@
 package main
 
 import (
-    "errors"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/tealeg/xlsx"
 )
@@ -29,17 +30,12 @@ func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf Outpu
 	}
 	sheet := xlFile.Sheets[sheetIndex]
 	for _, row := range sheet.Rows {
-		rowString := ""
+		vals := make([]string, 0)
 		if row != nil {
-			for i, cell := range row.Cells {
-				if i > 0 {
-					rowString = fmt.Sprintf("%s%s%q", rowString, *delimiter, cell.String())
-				} else {
-					rowString = fmt.Sprintf("%q", cell.String())
-				}
+			for _, cell := range row.Cells {
+				vals = append(vals, fmt.Sprintf("%q", cell.String()))
 			}
-			rowString = fmt.Sprintf("%s\n", rowString)
-			outputf(rowString)
+			outputf(strings.Join(vals, *delimiter) + "\n")
 		}
 	}
 	return nil
