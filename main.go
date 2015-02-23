@@ -14,9 +14,9 @@ var xlsxPath = flag.String("f", "", "Path to an XLSX file")
 var sheetIndex = flag.Int("i", 0, "Index of sheet to convert, zero based")
 var delimiter = flag.String("d", ";", "Delimiter to use between fields")
 
-type Outputer func(s string)
+type outputer func(s string)
 
-func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf Outputer) error {
+func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf outputer) error {
 	xlFile, error := xlsx.OpenFile(excelFileName)
 	if error != nil {
 		return error
@@ -26,11 +26,11 @@ func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf Outpu
 	case sheetLen == 0:
 		return errors.New("This XLSX file contains no sheets.")
 	case sheetIndex >= sheetLen:
-		return errors.New(fmt.Sprintf("No sheet %d available, please select a sheet between 0 and %d\n", sheetIndex, sheetLen-1))
+		return fmt.Errorf("No sheet %d available, please select a sheet between 0 and %d\n", sheetIndex, sheetLen-1)
 	}
 	sheet := xlFile.Sheets[sheetIndex]
 	for _, row := range sheet.Rows {
-		vals := make([]string, 0)
+		var vals []string
 		if row != nil {
 			for _, cell := range row.Cells {
 				vals = append(vals, fmt.Sprintf("%q", cell.String()))
