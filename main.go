@@ -43,14 +43,13 @@ func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf outpu
 
 func main() {
 	flag.Parse()
-	var err error
 	if len(os.Args) < 3 {
 		flag.PrintDefaults()
 		return
 	}
 	flag.Parse()
-	err = generateCSVFromXLSXFile(*xlsxPath, *sheetIndex, func(s string) { fmt.Printf("%s", s) })
-	if err != nil {
+	printer := func(s string) { fmt.Printf("%s", s) }
+	if err := generateCSVFromXLSXFile(*xlsxPath, *sheetIndex, printer); err != nil {
 		fmt.Println(err)
 	}
 }
