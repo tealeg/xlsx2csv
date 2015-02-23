@@ -23,16 +23,11 @@ func (e XLSX2CSVError) Error() string {
 }
 
 func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf Outputer) error {
-	var xlFile *xlsx.File
-	var error error
-	var sheetLen int
-	var rowString string
-
-	xlFile, error = xlsx.OpenFile(excelFileName)
+	xlFile, error := xlsx.OpenFile(excelFileName)
 	if error != nil {
 		return error
 	}
-	sheetLen = len(xlFile.Sheets)
+	sheetLen := len(xlFile.Sheets)
 	switch {
 	case sheetLen == 0:
 		e := new(XLSX2CSVError)
@@ -45,7 +40,7 @@ func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf Outpu
 	}
 	sheet := xlFile.Sheets[sheetIndex]
 	for _, row := range sheet.Rows {
-		rowString = ""
+		rowString := ""
 		if row != nil {
 			for cellIndex, cell := range row.Cells {
 				if cellIndex > 0 {
