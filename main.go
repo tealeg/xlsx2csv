@@ -3,8 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/tealeg/xlsx"
 	"os"
+
+	"github.com/tealeg/xlsx"
 )
 
 var xlsxPath = flag.String("f", "", "Path to an XLSX file")
@@ -48,9 +49,9 @@ func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf Outpu
 		if row != nil {
 			for cellIndex, cell := range row.Cells {
 				if cellIndex > 0 {
-					rowString = fmt.Sprintf("%s%s\"%s\"", rowString, *delimiter, cell.String())
+					rowString = fmt.Sprintf("%s%s%q", rowString, *delimiter, cell.String())
 				} else {
-					rowString = fmt.Sprintf("\"%s\"", cell.String())
+					rowString = fmt.Sprintf("%q", cell.String())
 				}
 			}
 			rowString = fmt.Sprintf("%s\n", rowString)
