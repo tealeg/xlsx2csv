@@ -1,6 +1,7 @@
 package main
 
 import (
+    "errors"
 	"flag"
 	"fmt"
 	"os"
@@ -14,14 +15,6 @@ var delimiter = flag.String("d", ";", "Delimiter to use between fields")
 
 type Outputer func(s string)
 
-type XLSX2CSVError struct {
-	error string
-}
-
-func (e XLSX2CSVError) Error() string {
-	return e.error
-}
-
 func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf Outputer) error {
 	xlFile, error := xlsx.OpenFile(excelFileName)
 	if error != nil {
@@ -30,20 +23,16 @@ func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf Outpu
 	sheetLen := len(xlFile.Sheets)
 	switch {
 	case sheetLen == 0:
-		e := new(XLSX2CSVError)
-		e.error = "This XLSX file contains no sheets.\n"
-		return *e
+		return errors.New("This XLSX file contains no sheets.")
 	case sheetIndex >= sheetLen:
-		e := new(XLSX2CSVError)
-		e.error = fmt.Sprintf("No sheet %d available, please select a sheet between 0 and %d\n", sheetIndex, sheetLen-1)
-		return *e
+		return errors.New(fmt.Sprintf("No sheet %d available, please select a sheet between 0 and %d\n", sheetIndex, sheetLen-1))
 	}
 	sheet := xlFile.Sheets[sheetIndex]
 	for _, row := range sheet.Rows {
 		rowString := ""
 		if row != nil {
-			for cellIndex, cell := range row.Cells {
-				if cellIndex > 0 {
+			for i, cell := range row.Cells {
+				if i > 0 {
 					rowString = fmt.Sprintf("%s%s%q", rowString, *delimiter, cell.String())
 				} else {
 					rowString = fmt.Sprintf("%q", cell.String())
