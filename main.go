@@ -41,19 +41,11 @@ func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf outpu
 	return nil
 }
 
-func usage() {
-	fmt.Printf(`%s: -f=<XLSXFile> -i=<SheetIndex> -d=<Delimiter>
-
-Note: SheetIndex should be a number, zero based
-`,
-		os.Args[0])
-}
-
 func main() {
 	flag.Parse()
 	var error error
 	if len(os.Args) < 3 {
-		usage()
+        flag.PrintDefaults()
 		return
 	}
 	flag.Parse()
