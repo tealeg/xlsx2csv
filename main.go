@@ -1,84 +1,55 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
-	"github.com/tealeg/xlsx"
 	"os"
+	"strings"
+
+	"github.com/tealeg/xlsx"
 )
 
 var xlsxPath = flag.String("f", "", "Path to an XLSX file")
 var sheetIndex = flag.Int("i", 0, "Index of sheet to convert, zero based")
 var delimiter = flag.String("d", ";", "Delimiter to use between fields")
 
-type Outputer func(s string)
+type outputer func(s string)
 
-type XLSX2CSVError struct {
-	error string
-}
-
-func (e XLSX2CSVError) Error() string {
-	return e.error
-}
-
-func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf Outputer) error {
-	var xlFile *xlsx.File
-	var error error
-	var sheetLen int
-	var rowString string
-
-	xlFile, error = xlsx.OpenFile(excelFileName)
+func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf outputer) error {
+	xlFile, error := xlsx.OpenFile(excelFileName)
 	if error != nil {
 		return error
 	}
-	sheetLen = len(xlFile.Sheets)
+	sheetLen := len(xlFile.Sheets)
 	switch {
 	case sheetLen == 0:
-		e := new(XLSX2CSVError)
-		e.error = "This XLSX file contains no sheets.\n"
-		return *e
+		return errors.New("This XLSX file contains no sheets.")
 	case sheetIndex >= sheetLen:
-		e := new(XLSX2CSVError)
-		e.error = fmt.Sprintf("No sheet %d available, please select a sheet between 0 and %d\n", sheetIndex, sheetLen-1)
-		return *e
+		return fmt.Errorf("No sheet %d available, please select a sheet between 0 and %d\n", sheetIndex, sheetLen-1)
 	}
 	sheet := xlFile.Sheets[sheetIndex]
 	for _, row := range sheet.Rows {
-		rowString = ""
+		var vals []string
 		if row != nil {
-			for cellIndex, cell := range row.Cells {
-				if cellIndex > 0 {
-					rowString = fmt.Sprintf("%s%s\"%s\"", rowString, *delimiter, cell.String())
-				} else {
-					rowString = fmt.Sprintf("\"%s\"", cell.String())
-				}
+			for _, cell := range row.Cells {
+				vals = append(vals, fmt.Sprintf("%q", cell.String()))
 			}
-			rowString = fmt.Sprintf("%s\n", rowString)
-			outputf(rowString)
+			outputf(strings.Join(vals, *delimiter) + "\n")
 		}
 	}
 	return nil
 }
 
-func usage() {
-	fmt.Printf(`%s: -f=<XLSXFile> -i=<SheetIndex> -d=<Delimiter>
-
-Note: SheetIndex should be a number, zero based
-`,
-		os.Args[0])
-}
-
 func main() {
 	flag.Parse()
-	var error error
 	if len(os.Args) < 3 {
-		usage()
+		flag.PrintDefaults()
 		return
 	}
 	flag.Parse()
-	error = generateCSVFromXLSXFile(*xlsxPath, *sheetIndex, func(s string) { fmt.Printf("%s", s) })
-	if error != nil {
-		fmt.Printf(error.Error())
-		return
+	printer := func(s string) { fmt.Printf("%s", s) }
+	if err := generateCSVFromXLSXFile(*xlsxPath, *sheetIndex, printer); err != nil {
+		fmt.Println(err)
 	}
 }
