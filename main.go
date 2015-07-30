@@ -79,10 +79,20 @@ func main() {
 		sheetIndex = flag.Int("i", 0, "Index of sheet to convert, zero based")
 		delimiter  = flag.String("d", ";", "Delimiter to use between fields")
 	)
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, `%s
+	dumps the given xlsx file's chosen sheet as a CSV,
+	with the specified delimiter, into the specified output.
+
+Usage:
+	%s [flags] <xlsx-to-be-read>
+`, os.Args[0], os.Args[0])
+		flag.PrintDefaults()
+	}
 
 	flag.Parse()
-	if flag.NArg() < 1 {
-		flag.PrintDefaults()
+	if flag.NArg() != 1 {
+		flag.Usage()
 		os.Exit(1)
 	}
 	out := os.Stdout
