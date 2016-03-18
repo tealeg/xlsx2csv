@@ -33,10 +33,10 @@ func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf outpu
 		var vals []string
 		if row != nil {
 			for _, cell := range row.Cells {
-                                str, err := cell.String()
+				str, err := cell.String()
 				if err != nil {
 					vals = append(vals, err.Error())
-				}		
+				}
 				vals = append(vals, fmt.Sprintf("%q", str))
 			}
 			outputf(strings.Join(vals, *delimiter) + "\n")
