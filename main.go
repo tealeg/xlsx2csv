@@ -35,11 +35,8 @@ func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf outpu
 
 	maxRowLen := 0
 	// get max columns
-	for _, row := range sheet.Rows {
-		rowLen := len(row.Cells)
-		if rowLen > maxRowLen {
-			maxRowLen = rowLen
-		}
+	if len(sheet.Rows) > 0 {
+		maxRowLen = len(sheet.Rows[0].Cells)
 	}
 
 	for _, row := range sheet.Rows {
