@@ -12,7 +12,7 @@ import (
 
 var xlsxPath = flag.String("f", "", "Path to an XLSX file")
 var sheetIndex = flag.Int("i", 0, "Index of sheet to convert, zero based")
-var delimiter = flag.String("d", ";", "Delimiter to use between fields")
+var delimiter = flag.String("d", ",", "Delimiter to use between fields")
 var addMissing = flag.Bool("a", false, "Add blank string as missing tail columns values")
 
 type outputer func(s string)
