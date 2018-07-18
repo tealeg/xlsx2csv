@@ -13,6 +13,7 @@ import (
 var xlsxPath = flag.String("f", "", "Path to an XLSX file")
 var sheetIndex = flag.Int("i", 0, "Index of sheet to convert, zero based")
 var delimiter = flag.String("d", ";", "Delimiter to use between fields")
+var addMissing = flag.Bool("a", false, "Add blank string as missing tail columns values")
 
 type outputer func(s string)
 
@@ -21,6 +22,7 @@ func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf outpu
 	if error != nil {
 		return error
 	}
+
 	sheetLen := len(xlFile.Sheets)
 	switch {
 	case sheetLen == 0:
@@ -28,7 +30,18 @@ func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf outpu
 	case sheetIndex >= sheetLen:
 		return fmt.Errorf("No sheet %d available, please select a sheet between 0 and %d\n", sheetIndex, sheetLen-1)
 	}
+
 	sheet := xlFile.Sheets[sheetIndex]
+
+	maxRowLen := 0
+	// get max columns
+	for _, row := range sheet.Rows {
+		rowLen := len(row.Cells)
+		if rowLen > maxRowLen {
+			maxRowLen = rowLen
+		}
+	}
+
 	for _, row := range sheet.Rows {
 		var vals []string
 		if row != nil {
@@ -39,6 +52,16 @@ func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf outpu
 				}
 				vals = append(vals, fmt.Sprintf("%q", str))
 			}
+
+			// fix missing columns
+			if *addMissing {
+				rowLen := len(row.Cells)
+				missingColumns := maxRowLen - rowLen
+				for i := 1; i <= missingColumns; i++ {
+					vals = append(vals, fmt.Sprintf("%q", ""))
+				}
+			}
+
 			outputf(strings.Join(vals, *delimiter) + "\n")
 		}
 	}
