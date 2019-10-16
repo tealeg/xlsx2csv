@@ -1,22 +1,22 @@
+// Copyright 2011-2015, The xlsx2csv Authors.
+// All rights reserved.
+// For details, see the LICENSE file.
+
 package main
 
 import (
+	"encoding/csv"
 	"errors"
 	"flag"
 	"fmt"
+	"io"
+	"log"
 	"os"
-	"strings"
 
 	"github.com/tealeg/xlsx"
 )
 
-var xlsxPath = flag.String("f", "", "Path to an XLSX file")
-var sheetIndex = flag.Int("i", 0, "Index of sheet to convert, zero based")
-var delimiter = flag.String("d", ";", "Delimiter to use between fields")
-
-type outputer func(s string)
-
-func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf outputer) error {
+func generateCSVFromXLSXFile(w io.Writer, excelFileName string, sheetIndex int, csvOpts csvOptSetter) error {
 	xlFile, error := xlsx.OpenFile(excelFileName)
 	if error != nil {
 		return error
@@ -28,10 +28,15 @@ func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf outpu
 	case sheetIndex >= sheetLen:
 		return fmt.Errorf("No sheet %d available, please select a sheet between 0 and %d\n", sheetIndex, sheetLen-1)
 	}
+	cw := csv.NewWriter(w)
+	if csvOpts != nil {
+		csvOpts(cw)
+	}
 	sheet := xlFile.Sheets[sheetIndex]
+	var vals []string
 	for _, row := range sheet.Rows {
-		var vals []string
 		if row != nil {
+			vals = vals[:0]
 			for _, cell := range row.Cells {
 				str, err := cell.FormattedValue()
 				if err != nil {
@@ -39,21 +44,52 @@ func generateCSVFromXLSXFile(excelFileName string, sheetIndex int, outputf outpu
 				}
 				vals = append(vals, fmt.Sprintf("%q", str))
 			}
-			outputf(strings.Join(vals, *delimiter) + "\n")
 		}
 	}
-	return nil
+	cw.Flush()
+	return cw.Error()
 }
 
+type csvOptSetter func(*csv.Writer)
+
 func main() {
-	flag.Parse()
-	if len(os.Args) < 3 {
+	var (
+		outFile    = flag.String("o", "-", "filename to output to. -=stdout")
+		sheetIndex = flag.Int("i", 0, "Index of sheet to convert, zero based")
+		delimiter  = flag.String("d", ";", "Delimiter to use between fields")
+	)
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, `%s
+	dumps the given xlsx file's chosen sheet as a CSV,
+	with the specified delimiter, into the specified output.
+
+Usage:
+	%s [flags] <xlsx-to-be-read>
+`, os.Args[0], os.Args[0])
 		flag.PrintDefaults()
-		return
 	}
+
 	flag.Parse()
-	printer := func(s string) { fmt.Printf("%s", s) }
-	if err := generateCSVFromXLSXFile(*xlsxPath, *sheetIndex, printer); err != nil {
-		fmt.Println(err)
+	if flag.NArg() != 1 {
+		flag.Usage()
+		os.Exit(1)
+	}
+	out := os.Stdout
+	if !(*outFile == "" || *outFile == "-") {
+		var err error
+		if out, err = os.Create(*outFile); err != nil {
+			log.Fatal(err)
+		}
+	}
+	defer func() {
+		if closeErr := out.Close(); closeErr != nil {
+			log.Fatal(closeErr)
+		}
+	}()
+
+	if err := generateCSVFromXLSXFile(out, flag.Arg(0), *sheetIndex,
+		func(cw *csv.Writer) { cw.Comma = ([]rune(*delimiter))[0] },
+	); err != nil {
+		log.Fatal(err)
 	}
 }
