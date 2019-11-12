@@ -45,6 +45,7 @@ func generateCSVFromXLSXFile(w io.Writer, excelFileName string, sheetIndex int, 
 				vals = append(vals, fmt.Sprintf("%q", str))
 			}
 		}
+		cw.Write(vals)
 	}
 	cw.Flush()
 	return cw.Error()
