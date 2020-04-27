@@ -13,13 +13,13 @@ import (
 	"log"
 	"os"
 
-	"github.com/tealeg/xlsx"
+	"github.com/tealeg/xlsx/v3"
 )
 
 func generateCSVFromXLSXFile(w io.Writer, excelFileName string, sheetIndex int, csvOpts csvOptSetter) error {
-	xlFile, error := xlsx.OpenFile(excelFileName)
-	if error != nil {
-		return error
+	xlFile, err := xlsx.OpenFile(excelFileName)
+	if err != nil {
+		return err
 	}
 	sheetLen := len(xlFile.Sheets)
 	switch {
@@ -34,18 +34,26 @@ func generateCSVFromXLSXFile(w io.Writer, excelFileName string, sheetIndex int, 
 	}
 	sheet := xlFile.Sheets[sheetIndex]
 	var vals []string
-	for _, row := range sheet.Rows {
+	err = sheet.ForEachRow(func(row *xlsx.Row) error {
 		if row != nil {
 			vals = vals[:0]
-			for _, cell := range row.Cells {
+			err := row.ForEachCell(func(cell *xlsx.Cell) error {
 				str, err := cell.FormattedValue()
 				if err != nil {
-					vals = append(vals, err.Error())
+					return err
 				}
-				vals = append(vals, fmt.Sprintf("%q", str))
+				vals = append(vals, str)
+				return nil
+			})
+			if err != nil {
+				return err
 			}
 		}
 		cw.Write(vals)
+		return nil
+	})
+	if err != nil {
+		return err
 	}
 	cw.Flush()
 	return cw.Error()

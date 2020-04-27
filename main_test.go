@@ -28,8 +28,10 @@ No;;Yes
 `},
 	} {
 		testOutput.Reset()
-		if err := generateCSVFromXLSXFile(&testOutput,
-			tc.excelFileName, tc.sheetIndex,
+		if err := generateCSVFromXLSXFile(
+			&testOutput,
+			tc.excelFileName,
+			tc.sheetIndex,
 			func(cw *csv.Writer) { cw.Comma = ';' },
 		); err != nil {
 			t.Error(err)
