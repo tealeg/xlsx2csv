@@ -27,7 +27,7 @@ jobs:
       - run: gox -ldflags "-X main.Version $BUILD_VERSION -X main.BuildDate $BUILD_DATE" -os="linux darwin windows" -arch="amd64" -output "dist/ncd_{{.OS}}_{{.Arch}}"
       - run: ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace `git describe --tags` dist/
 orbs:
-  go: circleci/go@x.y
+  go: circleci/go@1.15
 version: 2.1
 workflows:
   build_test_deploy:
