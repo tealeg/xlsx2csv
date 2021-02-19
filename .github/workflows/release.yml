@@ -1,0 +1,55 @@
+on:
+  push:
+    branches:
+      - master
+name: release
+env:
+jobs:
+  test:
+    strategy:
+      matrix:
+        go-version: [1.15.x]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+      - name: Install Gox
+        run: go get -u github.com/mitchellh/gox
+      - name: Install GHR
+        run: go get -u go get -u github.com/tcnksm/ghr
+      - name: Get bump
+        id: bump
+        uses: zwaldowski/match-label-action@v1
+        with:
+          allowed: >
+            major
+            minor
+            patch
+      - name: Get next version
+        id: next_version
+        uses: zwaldowski/semver-release-action@v1
+          with:
+            dry_run: true
+            bump: ${{ steps.bump.outputs.match }}
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build with Gox
+        run: gox -ldflags "-X main.Version ${{ steps.next_version.outputs.version }} -os="linux darwin windows" -arch="amd64" -output "dist/ncd_{{.OS}}_{{.Arch}}"
+      - name: Bump Version
+        id: git_commit
+        run: |
+          git add .
+          git commit -m "Bump version"
+          git push
+          echo ::set-output name=sha::$(git rev-parse HEAD)
+      - name: Release new version
+        uses: zwaldowski/semver-release-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          sha: ${{ steps.git_commit.outputs.sha }}
