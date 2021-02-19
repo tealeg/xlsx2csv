@@ -6,66 +6,23 @@ package main
 
 import (
 	"encoding/csv"
-	"errors"
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"os"
 
-	"github.com/tealeg/xlsx/v3"
+	"github.com/dkoston/xlsx2csv/xlsx"
 )
-
-func generateCSVFromXLSXFile(w io.Writer, excelFileName string, sheetIndex int, csvOpts csvOptSetter) error {
-	xlFile, err := xlsx.OpenFile(excelFileName)
-	if err != nil {
-		return err
-	}
-	sheetLen := len(xlFile.Sheets)
-	switch {
-	case sheetLen == 0:
-		return errors.New("This XLSX file contains no sheets.")
-	case sheetIndex >= sheetLen:
-		return fmt.Errorf("No sheet %d available, please select a sheet between 0 and %d\n", sheetIndex, sheetLen-1)
-	}
-	cw := csv.NewWriter(w)
-	if csvOpts != nil {
-		csvOpts(cw)
-	}
-	sheet := xlFile.Sheets[sheetIndex]
-	var vals []string
-	err = sheet.ForEachRow(func(row *xlsx.Row) error {
-		if row != nil {
-			vals = vals[:0]
-			err := row.ForEachCell(func(cell *xlsx.Cell) error {
-				str, err := cell.FormattedValue()
-				if err != nil {
-					return err
-				}
-				vals = append(vals, str)
-				return nil
-			})
-			if err != nil {
-				return err
-			}
-		}
-		cw.Write(vals)
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-	cw.Flush()
-	return cw.Error()
-}
 
 type csvOptSetter func(*csv.Writer)
 
 func main() {
 	var (
-		outFile    = flag.String("o", "-", "filename to output to. -=stdout")
-		sheetIndex = flag.Int("i", 0, "Index of sheet to convert, zero based")
-		delimiter  = flag.String("d", ";", "Delimiter to use between fields")
+		outFilename = flag.String("o", "-", "filename to output to. -=stdout (default == STDOUT)")
+		outFilepath = flag.String("p", "", "path to output to. Current directory if not set")
+		sheetIndex = flag.Int("i", 0, "Index of sheet to convert, zero based (default == 0")
+		delimiter  = flag.String("d", ",", "Delimiter to use between fields (default == ,")
+		allSheets  = flag.Bool("a", false, "Convert all sheets using the sheet name (lowercased with _ for spaces) as the output file name (default == false)")
 	)
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, `%s
@@ -83,22 +40,35 @@ Usage:
 		flag.Usage()
 		os.Exit(1)
 	}
-	out := os.Stdout
-	if !(*outFile == "" || *outFile == "-") {
-		var err error
-		if out, err = os.Create(*outFile); err != nil {
+
+	csvOpts := func(cw *csv.Writer) { cw.Comma = ([]rune(*delimiter))[0] }
+
+	// Open our XSLX file
+	file, err := xlsx.New(flag.Arg(0))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if *allSheets {
+		// Get the number of sheets from the XSLX file
+		err = file.GenerateCSVsFromAllSheets(*outFilepath, csvOpts)
+		if err != nil {
 			log.Fatal(err)
 		}
+		os.Exit(0)
 	}
-	defer func() {
-		if closeErr := out.Close(); closeErr != nil {
-			log.Fatal(closeErr)
-		}
-	}()
 
-	if err := generateCSVFromXLSXFile(out, flag.Arg(0), *sheetIndex,
-		func(cw *csv.Writer) { cw.Comma = ([]rune(*delimiter))[0] },
-	); err != nil {
+	outFile, err := xlsx.GetOutFile(*outFilename, *outFilepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = file.GenerateCSVFromSheet(outFile, *sheetIndex, csvOpts)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = outFile.Close()
+	if err != nil {
 		log.Fatal(err)
 	}
 }
