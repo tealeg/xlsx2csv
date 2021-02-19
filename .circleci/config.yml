@@ -23,7 +23,7 @@ jobs:
 
       # specify any bash command here prefixed with `run: `
       - run: go get -v -t -d ./...
-      - run: go get golang.org/x/tools/cmd/cover
-      - run: go get github.com/mattn/goveralls
+      - run: go get -u golang.org/x/tools/cmd/cover
+      - run: go get -u github.com/mattn/goveralls
       - run: go test -v -covermode=count -coverprofile=coverage.out
-          goveralls -coverprofile=coverage.out -service=circle-ci -repotoken $COVERALLS_TOKEN
+          /go/bin/goveralls -coverprofile=coverage.out -service=circle-ci -repotoken $COVERALLS_TOKEN
