@@ -10,7 +10,6 @@ import (
 	"strings"
 )
 
-
 // File provides access to the xslx data as well as the path
 type File struct {
 	Path     string
