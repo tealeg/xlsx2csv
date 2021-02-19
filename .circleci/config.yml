@@ -11,7 +11,7 @@ jobs:
       - run: go get -u golang.org/x/tools/cmd/cover
       - run: go get -u github.com/mattn/goveralls
       - run: go test -v -covermode=count -coverprofile=coverage.out
-          /goveralls -coverprofile=coverage.out -service=circle-ci -repotoken $COVERALLS_TOKEN
+          goveralls -coverprofile=coverage.out -service=circle-ci -repotoken $COVERALLS_TOKEN
 
   deploy:
     executor:
@@ -34,6 +34,8 @@ workflows:
     jobs:
       - test
       - deploy:
+        requires:
+          - test
         filters:
           branches:
             only:
