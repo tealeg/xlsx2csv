@@ -10,6 +10,8 @@ import (
 	"strings"
 )
 
+
+// File provides access to the xslx data as well as the path
 type File struct {
 	Path     string
 	XLSXData *x.File
@@ -35,7 +37,7 @@ func (f *File) SheetCount() int {
 	return len(f.XLSXData.Sheets)
 }
 
-// getOutFile opens a file for writing at outFilename
+// GetOutFile opens a file for writing at outFilename
 func GetOutFile(outFilename string, outFilepath string) (file *os.File, err error) {
 	out := os.Stdout
 	if !(outFilename == "" || outFilename == "-") {
@@ -93,6 +95,7 @@ func (f *File) GenerateCSVFromSheet(w io.Writer, index int, csvOpts csvOptSetter
 	return writer.Error()
 }
 
+// GenerateCSVsFromAllSheets iterates through all sheets and saves them as CSVs using their name
 func (f *File) GenerateCSVsFromAllSheets(outFilepath string, csvOpts csvOptSetter) error {
 	// Get sheet names
 	keys := make([]string, 0, len(f.XLSXData.Sheet))
