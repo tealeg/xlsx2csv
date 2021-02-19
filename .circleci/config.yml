@@ -1,33 +1,34 @@
-# Golang CircleCI 2.1 configuration file
-#
-# Check https://circleci.com/docs/2.1/language-go/ for more details
-version: 2.1
 jobs:
   test:
-    docker:
-      - image: circleci/golang:1.15
-    working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
+    executor:
+      name: go/default
+      tag: '1.15'
     steps:
-      - run: export GOPATH=/go
       - checkout
-      - go get -v -t -d ./...
+      - go/load-cache
+      - go/mod-download
+      - go/save-cache
       - run: go get -u golang.org/x/tools/cmd/cover
       - run: go get -u github.com/mattn/goveralls
       - run: go test -v -covermode=count -coverprofile=coverage.out
-          /go/bin/goveralls -coverprofile=coverage.out -service=circle-ci -repotoken $COVERALLS_TOKEN
+          /goveralls -coverprofile=coverage.out -service=circle-ci -repotoken $COVERALLS_TOKEN
 
   deploy:
-    docker:
-      - image: circleci/golang:1.15
-    working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
+    executor:
+      name: go/default
+      tag: '1.15'
     steps:
-      - run: export GOPATH=/go
       - checkout
+      - go/load-cache
+      - go/mod-download
+      - go/save-cache
       - run: go get -u github.com/mitchellh/gox
       - run: go get -u github.com/tcnksm/ghr
-      - run: /go/bin/gox -ldflags "-X main.Version $BUILD_VERSION -X main.BuildDate $BUILD_DATE" -os="linux darwin windows" -arch="amd64" -output "dist/ncd_{{.OS}}_{{.Arch}}"
-      - run: /go/bin/ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace `git describe --tags` dist/
-
+      - run: gox -ldflags "-X main.Version $BUILD_VERSION -X main.BuildDate $BUILD_DATE" -os="linux darwin windows" -arch="amd64" -output "dist/ncd_{{.OS}}_{{.Arch}}"
+      - run: ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace `git describe --tags` dist/
+orbs:
+  go: circleci/go@x.y
+version: 2.1
 workflows:
   build_test_deploy:
     jobs:
