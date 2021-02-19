@@ -20,9 +20,9 @@ func main() {
 	var (
 		outFilename = flag.String("o", "-", "filename to output to. -=stdout (default == STDOUT)")
 		outFilepath = flag.String("p", "", "path to output to. Current directory if not set")
-		sheetIndex = flag.Int("i", 0, "Index of sheet to convert, zero based (default == 0")
-		delimiter  = flag.String("d", ",", "Delimiter to use between fields (default == ,")
-		allSheets  = flag.Bool("a", false, "Convert all sheets using the sheet name (lowercased with _ for spaces) as the output file name (default == false)")
+		sheetIndex  = flag.Int("i", 0, "Index of sheet to convert, zero based (default == 0")
+		delimiter   = flag.String("d", ",", "Delimiter to use between fields (default == ,")
+		allSheets   = flag.Bool("a", false, "Convert all sheets using the sheet name (lowercased with _ for spaces) as the output file name (default == false)")
 	)
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, `%s

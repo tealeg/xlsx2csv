@@ -35,7 +35,6 @@ func TestFile_SheetCount(t *testing.T) {
 		t.Errorf("expected %d sheet, got %d. %s", expectedCount3, count3, filename3)
 	}
 
-
 	// testdata/testfile.xlsx has 3 sheets
 	filename := "../testdata/testfile.xlsx"
 	expectedCount := 3
@@ -97,21 +96,21 @@ No;;Yes
 func Test_getSheetFilename(t *testing.T) {
 	type testCase struct {
 		sheetName string
-		fileName string
+		fileName  string
 	}
 
 	testCases := []testCase{
 		{
 			sheetName: "[1]Speci@lCh$$rs Time",
-			fileName: "1specilchrs_time.csv",
+			fileName:  "1specilchrs_time.csv",
 		},
 		{
 			sheetName: "UG.Industries",
-			fileName: "ug.industries.csv",
+			fileName:  "ug.industries.csv",
 		},
 		{
 			sheetName: "Multiple Spaces Here!",
-			fileName: "multiple_spaces_here.csv",
+			fileName:  "multiple_spaces_here.csv",
 		},
 	}
 

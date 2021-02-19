@@ -10,9 +10,8 @@ import (
 	"strings"
 )
 
-
 type File struct {
-	Path string
+	Path     string
 	XLSXData *x.File
 }
 
@@ -26,7 +25,7 @@ func New(path string) (file *File, err error) {
 	}
 
 	return &File{
-		Path: path,
+		Path:     path,
 		XLSXData: xlsxFile,
 	}, nil
 }
@@ -37,7 +36,7 @@ func (f *File) SheetCount() int {
 }
 
 // getOutFile opens a file for writing at outFilename
-func GetOutFile(outFilename string, outFilepath string) (file *os.File, err error){
+func GetOutFile(outFilename string, outFilepath string) (file *os.File, err error) {
 	out := os.Stdout
 	if !(outFilename == "" || outFilename == "-") {
 		if outFilepath != "" {
@@ -107,7 +106,7 @@ func (f *File) GenerateCSVsFromAllSheets(outFilepath string, csvOpts csvOptSette
 	}
 
 	for i := 0; i < f.SheetCount(); i++ {
-		outFile, err := GetOutFile(keys[i] + ".csv", outFilepath)
+		outFile, err := GetOutFile(keys[i]+".csv", outFilepath)
 		if err != nil {
 			return err
 		}
