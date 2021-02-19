@@ -3,29 +3,27 @@
 # Check https://circleci.com/docs/2.0/language-go/ for more details
 version: 2
 jobs:
-  build:
+  test:
     docker:
-      # specify the version
       - image: circleci/golang:1.15
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
-
-    #### TEMPLATE_NOTE: go expects specific checkout path representing url
-    #### expecting it in the form of
-    ####   /go/src/github.com/circleci/go-tool
-    ####   /go/src/bitbucket.org/circleci/go-tool
     working_directory: /
-    steps:
-      - checkout
-
-      - run: cd /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}} && go get -v -t -d ./...
-      - run: go get -u golang.org/x/tools/cmd/cover
-      - run: go get -u github.com/mattn/goveralls
-
-
-      - test
-      - run: cd /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}} && go test -v -covermode=count -coverprofile=coverage.out
+    commands:
+      - cd /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}} && go get -v -t -d ./...
+      - go get -u golang.org/x/tools/cmd/cover
+      - go get -u github.com/mattn/goveralls
+      - cd /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}} && go test -v -covermode=count -coverprofile=coverage.out
           /go/bin/goveralls -coverprofile=coverage.out -service=circle-ci -repotoken $COVERALLS_TOKEN
+
+  deploy:
+    release:
+      branch: master
+      docker:
+        - image: circleci/golang:1.15
+      working_directory: /
+      commands:
+        — cd /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}} && go get -v -t -d ./...
+        - go get -u github.com/mitchellh/gox
+        — go get -u github.com/tcnksm/ghr
+        — /go/bin/gox -ldflags "-X main.Version $BUILD_VERSION -X main.BuildDate $BUILD_DATE" -os="linux darwin windows" -arch="amd64" -output "dist/ncd_{{.OS}}_{{.Arch}}"
+        — /go/bin/ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace `git describe --tags` dist/
+
