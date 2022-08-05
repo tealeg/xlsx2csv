@@ -1,7 +1,7 @@
 # xlsx2csv
 Simple script for converting xlsx files to csv files commandline.
 ## Usage
-We compiled the program for `Windows` `Mac OS` and  `Linux`.
+We provide compiled version of the program for `Windows` `Mac OS` and  `Linux`.
 ```
 Usage:
 	./xlsx2csv_mac_64 [flags] <xlsx-to-be-read>
