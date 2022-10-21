@@ -16,7 +16,7 @@ import (
 	"github.com/tealeg/xlsx/v3"
 )
 
-func generateCSVFromXLSXFile(w io.Writer, excelFileName string, sheetIndex int, csvOpts csvOptSetter) error {
+func generateCSVFromXLSXFile(w io.Writer, excelFileName string, sheetIndex int, cols int, csvOpts csvOptSetter) error {
 	xlFile, err := xlsx.OpenFile(excelFileName)
 	if err != nil {
 		return err
@@ -34,20 +34,35 @@ func generateCSVFromXLSXFile(w io.Writer, excelFileName string, sheetIndex int, 
 	}
 	sheet := xlFile.Sheets[sheetIndex]
 	var vals []string
+	isHeader := cols == 0
 	err = sheet.ForEachRow(func(row *xlsx.Row) error {
 		if row != nil {
 			vals = vals[:0]
+			col := 0
 			err := row.ForEachCell(func(cell *xlsx.Cell) error {
 				str, err := cell.FormattedValue()
 				if err != nil {
 					return err
 				}
+				if isHeader {
+					if len(str) == 0 {
+						return nil;
+					}
+					cols += 1
+				} else if col >= cols {
+					return nil;
+				}
+				col += 1
 				vals = append(vals, str)
 				return nil
 			})
 			if err != nil {
 				return err
 			}
+		}
+		isHeader = false
+		if isEmpty(vals) {
+			return nil
 		}
 		cw.Write(vals)
 		return nil
@@ -59,6 +74,15 @@ func generateCSVFromXLSXFile(w io.Writer, excelFileName string, sheetIndex int, 
 	return cw.Error()
 }
 
+func isEmpty(vals []string) bool {
+	for _, v := range vals {
+		if len(v) != 0 {
+			return false
+		}
+	}
+	return true
+}
+
 type csvOptSetter func(*csv.Writer)
 
 func main() {
@@ -66,6 +90,7 @@ func main() {
 		outFile    = flag.String("o", "-", "filename to output to. -=stdout")
 		sheetIndex = flag.Int("i", 0, "Index of sheet to convert, zero based")
 		delimiter  = flag.String("d", ";", "Delimiter to use between fields")
+		cols  = flag.Int("c", 0, "Number of columns to output. If not specified first row is considered as header")
 	)
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, `%s
@@ -96,7 +121,7 @@ Usage:
 		}
 	}()
 
-	if err := generateCSVFromXLSXFile(out, flag.Arg(0), *sheetIndex,
+	if err := generateCSVFromXLSXFile(out, flag.Arg(0), *sheetIndex, *cols,
 		func(cw *csv.Writer) { cw.Comma = ([]rune(*delimiter))[0] },
 	); err != nil {
 		log.Fatal(err)
