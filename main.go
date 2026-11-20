@@ -13,7 +13,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/tealeg/xlsx/v3"
+	"codeberg.org/tealeg/xlsx/v4"
 )
 
 func generateCSVFromXLSXFile(w io.Writer, excelFileName string, sheetIndex int, csvOpts csvOptSetter) error {
